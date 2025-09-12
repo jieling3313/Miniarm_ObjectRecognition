@@ -15,6 +15,9 @@ class YoloDetector:
         # 載入 YOLOv8 模型
         rospy.loginfo("正在載入 YOLOv8 模型...")
         self.model = YOLO('yolov8n.pt')
+        # self.model = YOLO('yolov8s.pt')
+        # self.model = YOLO('yolov8m.pt')
+        # self.model = YOLO('yolov8l.pt')
         rospy.loginfo("YOLOv8 模型載入成功。")
         
         # 建立 CvBridge 實例
