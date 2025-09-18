@@ -4,40 +4,39 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <iomanip> // For std::setprecision
+#include <iomanip> // std::setprecision
 
 int main(int argc, char **argv)
 {
-    // Initialize ROS node
     ros::init(argc, argv, "host_client");
     ros::NodeHandle nh;
 
     ROS_INFO("Waiting for /trigger_selection service...");
-    // Wait for the Service to be available
+    // 連接伺服器（可接收狀態）
     ros::service::waitForService("/trigger_selection");
     ROS_INFO("Service connected.");
 
-    // Create a Service client
+    // 創立Service client
     ros::ServiceClient client = nh.serviceClient<yolo_ros::TriggerSelection>("/trigger_selection");
     
-    // Create a Publisher for the final selected object position
+    // 創見Publisher（最終選取物件座標）
     ros::Publisher position_pub = nh.advertise<geometry_msgs::PointStamped>("/selected_object/position", 10);
 
-    // Create a Service object
+    // 創 object for sendding
     yolo_ros::TriggerSelection srv;
 
     ROS_INFO("Sending request to server in container...");
-    // Call the Service
+    // 呼叫docker中server
     if (client.call(srv))
     {
-        // Check if the server returned any objects
+        // 是否回傳d435i物件辨識後的物件
         if (srv.response.object_names.empty())
         {
             ROS_INFO("Server reports no objects detected.");
             return 0;
         }
 
-        // Display the list of selectable objects in the local terminal
+        // 顯示所有被辨識的物件
         std::cout << "\n--- Detected Objects ---" << std::endl;
         for (int i = 0; i < srv.response.object_names.size(); ++i)
         {
@@ -48,15 +47,16 @@ int main(int argc, char **argv)
         }
         std::cout << "--------------------" << std::endl;
 
-        // Let the user choose
+        // 挑選夾取物
         std::cout << "Enter the number of the object to publish: ";
         int choice_idx;
         std::cin >> choice_idx;
-        choice_idx--; // Convert to 0-based index
+        choice_idx--; // idx 轉換(array)
 
+        /* 確認挑選物件在物件表中 */
         if (choice_idx >= 0 && choice_idx < srv.response.object_names.size())
         {
-            // Create a PointStamped message
+            // PointStamped message
             geometry_msgs::PointStamped point_msg;
             point_msg.header.stamp = ros::Time::now();
             point_msg.header.frame_id = "camera_color_optical_frame";

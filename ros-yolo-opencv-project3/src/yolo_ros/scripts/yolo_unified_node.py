@@ -15,7 +15,7 @@ class YoloUnifiedNode:
     def __init__(self):
         rospy.init_node('yolo_unified_node')
 
-        # --- 初始化 ---
+        # 初始化 
         self.model = YOLO('yolov8n.pt')
         self.bridge = CvBridge()
         self.intrinsics = None
@@ -24,14 +24,14 @@ class YoloUnifiedNode:
 
         rospy.loginfo("YOLO 統一功能節點已啟動。")
 
-        # --- ROS Publishers ---
+        # ROS Publishers
         self.annotated_image_pub = rospy.Publisher("/yolo_annotated_image", Image, queue_size=1)
         self.selected_pos_pub = rospy.Publisher('/selected_object/position', PointStamped, queue_size=10)
 
-        # --- ROS Service Server ---
+        # ROS Service Server
         self.srv = rospy.Service('/trigger_selection', TriggerSelection, self.handle_selection_request)
 
-        # --- ROS Subscribers ---
+        # ROS Subscribers
         self.cam_info_sub = rospy.Subscriber('/camera/color/camera_info', CameraInfo, self.camera_info_callback)
 
         color_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
@@ -78,10 +78,10 @@ class YoloUnifiedNode:
             cv2.putText(annotated_frame, f"({X:.1f},{Y:.1f},{Z:.1f})m", 
                         (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-        # 發布帶有標註的影像，用於即時觀看
+        # 發布標註後的影像
         self.annotated_image_pub.publish(self.bridge.cv2_to_imgmsg(annotated_frame, "bgr8"))
 
-        # 使用線程鎖安全地更新最近的辨識結果
+        # 更新最近的辨識結果
         with self.lock:
             self.latest_detection_results = current_detections
 
@@ -91,7 +91,7 @@ class YoloUnifiedNode:
         names = []
         positions = []
 
-        # 使用線程鎖安全地讀取辨識結果
+        # 讀取辨識結果
         with self.lock:
             if not self.latest_detection_results:
                 rospy.logwarn("目前沒有可用的辨識結果。")
